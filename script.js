@@ -9,13 +9,13 @@ let outputBuffer = "";
 
 function addToOutput(message) {
     outputBuffer += message + '\n';
-    updateConsoleDisplay(); // Update immediately
+    updateConsoleDisplay();
 }
 
 function updateConsoleDisplay() {
     const consoleElement = document.getElementById('console-output');
     consoleElement.textContent = outputBuffer;
-    consoleElement.scrollTop = consoleElement.scrollHeight; // Auto-scroll
+    consoleElement.scrollTop = consoleElement.scrollHeight;
 }
 
 function clearConsole() {
@@ -28,33 +28,31 @@ function runCode() {
     clearConsole();
 
     memoryCells = {};
-    // Filter out empty lines to avoid issues with line numbering and parsing
     codeLines = codeInput.split('\n').filter(line => line.trim() !== '');
     currentLineIndex = 0;
     isWaitingForInput = false;
     targetCellForInput = null;
 
     addToOutput("--- Flash Execution Started ---");
-    // Start execution with a slight delay to allow UI to update
     setTimeout(processNextLine, 10); 
 }
 
 function processNextLine() {
     if (isWaitingForInput) {
-        return; // Don't proceed if waiting for user input
+        return;
     }
     if (currentLineIndex >= codeLines.length) {
         addToOutput("--- Flash Execution Finished ---");
-        return; // End of program
+        return;
     }
 
     const line = codeLines[currentLineIndex];
     const lineNumber = currentLineIndex + 1;
-    currentLineIndex++; // Advance line pointer for next call
+    currentLineIndex++;
 
     const trimmedLine = line.trim();
     const parts = trimmedLine.split(/\s+/);
-    const command = parts[0].toLowerCase(); // ALL COMMANDS MUST BE LOWERCASE
+    const command = parts[0].toLowerCase();
 
     function getValue(part) {
         if (memoryCells.hasOwnProperty(part)) {
@@ -64,7 +62,7 @@ function processNextLine() {
         return isNaN(numValue) ? part : numValue;
     }
 
-    // --- Command Logic (all commands now lowercase) ---
+    // --- Command Logic ---
 
     if (command === "store") {
         if (parts.length < 4 || parts[2].toLowerCase() !== "in") {
@@ -174,10 +172,10 @@ function processNextLine() {
         const targetLine = parseInt(parts[1]);
         if (isNaN(targetLine) || targetLine < 1 || targetLine > codeLines.length) {
             addToOutput(`Error on line ${lineNumber}: 'goto' target '${parts[1]}' is invalid.`);
-            currentLineIndex = codeLines.length; // Stop
+            currentLineIndex = codeLines.length;
             setTimeout(processNextLine, 10); return;
         }
-        currentLineIndex = targetLine - 1; // 0-based index
+        currentLineIndex = targetLine - 1;
         setTimeout(processNextLine, 10);
     }
     else {
@@ -194,13 +192,48 @@ function sendInput() {
 
     const inputField = document.getElementById('user-input-field');
     const userInput = inputField.value;
-    inputField.value = ''; // Clear input
+    inputField.value = '';
 
     addToOutput(`[You typed]: ${userInput}`);
     memoryCells[targetCellForInput] = isNaN(parseFloat(userInput)) ? userInput : parseFloat(userInput);
 
     isWaitingForInput = false;
     targetCellForInput = null;
-    // Continue execution after input is received
     setTimeout(processNextLine, 10);
+}
+
+// --- New Copy/Paste Functions ---
+
+async function copyCode() {
+    const codeEditor = document.getElementById('code-editor');
+    try {
+        await navigator.clipboard.writeText(codeEditor.value);
+        alert('Flash code copied to clipboard!');
+    } catch (err) {
+        console.error('Failed to copy code: ', err);
+        alert('Failed to copy code. Please copy manually.');
+    }
+}
+
+async function pasteCode() {
+    const codeEditor = document.getElementById('code-editor');
+    try {
+        const text = await navigator.clipboard.readText();
+        codeEditor.value = text;
+        alert('Flash code pasted!');
+    } catch (err) {
+        console.error('Failed to paste code: ', err);
+        alert('Failed to paste code. Please paste manually.');
+    }
+}
+
+async function copyConsole() {
+    const consoleOutput = document.getElementById('console-output');
+    try {
+        await navigator.clipboard.writeText(consoleOutput.textContent);
+        alert('Console output copied to clipboard!');
+    } catch (err) {
+        console.error('Failed to copy console output: ', err);
+        alert('Failed to copy console output. Please copy manually.');
+    }
 }
