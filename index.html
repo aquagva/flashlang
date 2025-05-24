@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flash Language Interpreter</title>
     <style>
-        /* Здесь будет CSS-стиль для оформления страницы */
+        /* CSS-стили для оформления страницы */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -18,14 +18,14 @@
         }
         #main-container {
             display: flex;
-            flex-wrap: wrap; /* Позволяет блокам переноситься на новую строку на маленьких экранах */
+            flex-wrap: wrap; 
             gap: 20px;
             margin-top: 20px;
-            justify-content: center; /* Центрирует блоки по горизонтали */
+            justify-content: center; 
         }
         .code-section {
-            flex: 1; /* Позволяет секциям занимать доступное пространство */
-            min-width: 300px; /* Минимальная ширина для каждой секции */
+            flex: 1; 
+            min-width: 300px; 
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
@@ -40,8 +40,8 @@
             font-family: monospace;
             font-size: 14px;
             background-color: #f9f9f9;
-            resize: vertical; /* Разрешить изменять размер по вертикали */
-            box-sizing: border-box; /* Учитываем padding и border в общей ширине */
+            resize: vertical; 
+            box-sizing: border-box; 
         }
         #console-output {
             width: 100%;
@@ -49,16 +49,16 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            background-color: #333; /* Темный фон для консоли */
-            color: #0f0; /* Зеленый текст для консоли */
+            background-color: #333; 
+            color: #0f0; 
             font-family: monospace;
             font-size: 14px;
-            overflow-y: auto; /* Добавляет прокрутку, если текст не помещается */
-            white-space: pre-wrap; /* Сохраняет пробелы и переносит строки */
+            overflow-y: auto; 
+            white-space: pre-wrap; 
             box-sizing: border-box;
         }
         button {
-            display: block; /* Кнопка будет занимать всю ширину */
+            display: block; 
             width: 100%;
             padding: 12px 20px;
             margin-top: 15px;
@@ -75,7 +75,7 @@
         }
         @media (max-width: 768px) {
             #main-container {
-                flex-direction: column; /* На маленьких экранах блоки располагаются друг под другом */
+                flex-direction: column; 
                 align-items: center;
             }
             .code-section {
@@ -92,9 +92,10 @@
             <h2>Ваш Flash-код:</h2>
             <textarea id="code-editor" placeholder="Напишите ваш Flash-код здесь...
 
-Например:
+Примеры:
 Show Hello World
-Add 10 5"></textarea>
+Add 10 5
+Multiply 6 4"></textarea>
             <button onclick="runCode()">Запустить код Flash</button>
         </div>
 
