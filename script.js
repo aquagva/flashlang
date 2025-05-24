@@ -86,13 +86,17 @@ function processNextLine() {
 
     // Store value In cell_name
     if (command === "Store") {
+        // Expected: Store [value] In [cell_name]
+        // This requires careful parsing if 'value' itself can contain spaces.
+        // For simplicity now, let's assume 'value' is a single word or number.
         if (parts.length < 4 || parts[2] !== "In") {
             addToOutput(`Error on line ${lineNumber}: 'Store' command syntax error. Expected 'Store [value] In [cell_name]'.`);
         } else {
-            const cellName = parts[3];
-            const valueToStore = parts.slice(1, 2).join(' '); // Only the first word after 'Store' for simple value
-            // If the value is a number literal, parse it. Otherwise, store as text.
-            const parsedValue = isNaN(parseFloat(valueToStore)) ? valueToStore : parseFloat(valueToStore);
+            const valueToStorePart = parts[1]; // The part right after "Store"
+            const cellName = parts[3]; // The part right after "In"
+
+            // Determine if the value is a number or text
+            const parsedValue = isNaN(parseFloat(valueToStorePart)) ? valueToStorePart : parseFloat(valueToStorePart);
             memoryCells[cellName] = parsedValue;
         }
         setTimeout(processNextLine, 10);
@@ -102,7 +106,8 @@ function processNextLine() {
         if (parts.length < 2) {
             addToOutput(`Error on line ${lineNumber}: 'Show' command needs a value or cell name.`);
         } else {
-            const displayPart = parts.slice(1).join(' '); // Get everything after 'Show'
+            // Get everything after "Show" as the potential display value
+            const displayPart = parts.slice(1).join(' '); 
             if (memoryCells.hasOwnProperty(displayPart)) {
                 addToOutput(memoryCells[displayPart]); // Show content of cell
             } else {
@@ -118,7 +123,7 @@ function processNextLine() {
             setTimeout(processNextLine, 10);
             return;
         }
-        const cellName = parts[3];
+        const cellName = parts[3]; // The cell to store input into
         const promptMessage = parts.slice(6).join(' '); // The rest is the prompt message
         
         addToOutput(`[Flash asks]: ${promptMessage}`);
@@ -130,7 +135,7 @@ function processNextLine() {
     }
     // Calculate operation To result_cell_name From value1/cell1 And value2/cell2
     else if (command === "Calculate" && parts[2] === "To" && parts[4] === "From" && parts[6] === "And") {
-        if (parts.length !== 7) {
+        if (parts.length !== 8) { // 8 parts: Calculate, Op, To, ResultCell, From, Val1, And, Val2
             addToOutput(`Error on line ${lineNumber}: 'Calculate' command syntax error. Expected 'Calculate [operation] To [result_cell] From [val1] And [val2]'.`);
             setTimeout(processNextLine, 10);
             return;
@@ -141,7 +146,7 @@ function processNextLine() {
         const val2 = getValue(parts[7]);
 
         if (typeof val1 !== 'number' || typeof val2 !== 'number') {
-            addToOutput(`Error on line ${lineNumber}: '${operation}' operation needs valid numbers. Got '${val1}' and '${val2}'.`);
+            addToOutput(`Error on line <span class="math-inline">\{lineNumber\}\: '</span>{operation}' operation needs valid numbers. Got '<span class="math-inline">\{val1\}' and '</span>{val2}'.`);
             setTimeout(processNextLine, 10);
             return;
         }
@@ -160,7 +165,7 @@ function processNextLine() {
                 result = val1 / val2;
                 break;
             default:
-                addToOutput(`Error on line ${lineNumber}: Unknown operation type '${operation}'.`);
+                addToOutput(`Error on line <span class="math-inline">\{lineNumber\}\: Unknown operation type '</span>{operation}'.`);
                 setTimeout(processNextLine, 10);
                 return;
         }
@@ -169,7 +174,7 @@ function processNextLine() {
     }
     // If condition_start
     else if (command === "If") {
-        if (parts.length < 4) { // e.g., If val1 IsEqual val2
+        if (parts.length < 4) { // e.g., If val1 IsEqual val2 (4 parts minimum)
             addToOutput(`Error on line ${lineNumber}: 'If' command syntax error.`);
             setTimeout(processNextLine, 10);
             return;
@@ -194,96 +199,3 @@ function processNextLine() {
             }
             conditionMet = (val1 < val2);
         } else {
-            addToOutput(`Error on line ${lineNumber}: Unknown condition '${condition}'.`);
-            setTimeout(processNextLine, 10);
-            return;
-        }
-
-        if (!conditionMet) {
-            // Skip to EndIf or Else
-            let ifCounter = 1; // Counter for nested Ifs
-            let foundElse = false;
-            let skipToEndIf = false;
-            for (let i = currentLineIndex; i < codeLines.length; i++) {
-                const subCommand = codeLines[i].trim().split(/\s+/)[0];
-                if (subCommand === "If") {
-                    ifCounter++;
-                } else if (subCommand === "EndIf") {
-                    ifCounter--;
-                } else if (subCommand === "Else" && ifCounter === 1) { // Found Else for current If
-                    foundElse = true;
-                    currentLineIndex = i + 1; // Jump past Else
-                    break;
-                }
-                if (ifCounter === 0) { // Found matching EndIf for current If
-                    skipToEndIf = true;
-                    currentLineIndex = i + 1; // Jump past EndIf
-                    break;
-                }
-            }
-            if (!foundElse && !skipToEndIf) {
-                addToOutput(`Error on line ${lineNumber}: 'If' block not properly closed with 'EndIf'.`);
-                currentLineIndex = codeLines.length; // Stop execution
-            }
-        }
-        setTimeout(processNextLine, 10); // Continue execution (either inside or after If/Else)
-    }
-    // Else block
-    else if (command === "Else") {
-        // If we reached 'Else', it means the 'If' condition was true,
-        // so we need to skip the 'Else' block entirely until the matching 'EndIf'.
-        let ifCounter = 1; // Counter for nested Ifs
-        for (let i = currentLineIndex; i < codeLines.length; i++) {
-            const subCommand = codeLines[i].trim().split(/\s+/)[0];
-            if (subCommand === "If") {
-                ifCounter++;
-            } else if (subCommand === "EndIf") {
-                ifCounter--;
-            }
-            if (ifCounter === 0) { // Found matching EndIf for this If/Else block
-                currentLineIndex = i + 1; // Jump past EndIf
-                break;
-            }
-        }
-        if (ifCounter > 0) { // No matching EndIf found for this Else
-             addToOutput(`Error on line ${lineNumber}: 'Else' block not properly closed with 'EndIf'.`);
-             currentLineIndex = codeLines.length; // Stop execution
-        }
-        setTimeout(processNextLine, 10);
-    }
-    // EndIf block
-    else if (command === "EndIf") {
-        // Just continue to the next line
-        setTimeout(processNextLine, 10);
-    }
-    else {
-        addToOutput(`Error on line ${lineNumber}: Unknown command '${command}'.`);
-        setTimeout(processNextLine, 10);
-    }
-    updateConsoleDisplay();
-}
-
-// Function called when the user clicks the "Send Input" button
-function sendInput() {
-    if (!isWaitingForInput || !targetCellForInput) {
-        addToOutput("[System]: Not currently waiting for input.");
-        updateConsoleDisplay();
-        return;
-    }
-
-    const inputField = document.getElementById('user-input-field');
-    const userInput = inputField.value;
-    inputField.value = ''; // Clear the input field
-
-    addToOutput(`[You typed]: ${userInput}`); // Show what user typed
-    
-    // Store the user input into the target cell
-    // Try to parse as number if it looks like one, otherwise store as string
-    const parsedInput = isNaN(parseFloat(userInput)) ? userInput : parseFloat(userInput);
-    memoryCells[targetCellForInput] = parsedInput;
-
-    isWaitingForInput = false; // Resume execution
-    targetCellForInput = null; // Clear target cell
-    updateConsoleDisplay();
-    setTimeout(processNextLine, 10); // Continue executing the script
-}
