@@ -67,8 +67,6 @@ function processNextLine() {
         return;
     }
 
-    // Split by one or more spaces, and handle quoted strings if needed for messages
-    // For now, simpler split for distinct words for commands
     const parts = trimmedLine.split(/\s+/); 
     const command = parts[0];
 
@@ -77,7 +75,6 @@ function processNextLine() {
         if (memoryCells.hasOwnProperty(part)) {
             return memoryCells[part];
         }
-        // Try parsing as number, otherwise return as string
         const numValue = parseFloat(part);
         return isNaN(numValue) ? part : numValue;
     }
@@ -86,16 +83,11 @@ function processNextLine() {
 
     // Store value In cell_name
     if (command === "Store") {
-        // Expected: Store [value] In [cell_name]
-        // This requires careful parsing if 'value' itself can contain spaces.
-        // For simplicity now, let's assume 'value' is a single word or number.
         if (parts.length < 4 || parts[2] !== "In") {
             addToOutput(`Error on line ${lineNumber}: 'Store' command syntax error. Expected 'Store [value] In [cell_name]'.`);
         } else {
-            const valueToStorePart = parts[1]; // The part right after "Store"
-            const cellName = parts[3]; // The part right after "In"
-
-            // Determine if the value is a number or text
+            const valueToStorePart = parts[1];
+            const cellName = parts[3];
             const parsedValue = isNaN(parseFloat(valueToStorePart)) ? valueToStorePart : parseFloat(valueToStorePart);
             memoryCells[cellName] = parsedValue;
         }
@@ -106,12 +98,11 @@ function processNextLine() {
         if (parts.length < 2) {
             addToOutput(`Error on line ${lineNumber}: 'Show' command needs a value or cell name.`);
         } else {
-            // Get everything after "Show" as the potential display value
             const displayPart = parts.slice(1).join(' '); 
             if (memoryCells.hasOwnProperty(displayPart)) {
-                addToOutput(memoryCells[displayPart]); // Show content of cell
+                addToOutput(memoryCells[displayPart]);
             } else {
-                addToOutput(displayPart); // Show as literal text/number
+                addToOutput(displayPart);
             }
         }
         setTimeout(processNextLine, 10);
@@ -123,19 +114,18 @@ function processNextLine() {
             setTimeout(processNextLine, 10);
             return;
         }
-        const cellName = parts[3]; // The cell to store input into
-        const promptMessage = parts.slice(6).join(' '); // The rest is the prompt message
+        const cellName = parts[3];
+        const promptMessage = parts.slice(6).join(' ');
         
         addToOutput(`[Flash asks]: ${promptMessage}`);
-        targetCellForInput = cellName; // Store which cell to put the input into
-        isWaitingForInput = true; // Pause execution
-        updateConsoleDisplay(); // Ensure prompt is visible
-        document.getElementById('user-input-field').focus(); // Focus input field
-        // Execution will resume when sendInput() is called
+        targetCellForInput = cellName;
+        isWaitingForInput = true;
+        updateConsoleDisplay();
+        document.getElementById('user-input-field').focus();
     }
     // Calculate operation To result_cell_name From value1/cell1 And value2/cell2
     else if (command === "Calculate" && parts[2] === "To" && parts[4] === "From" && parts[6] === "And") {
-        if (parts.length !== 8) { // 8 parts: Calculate, Op, To, ResultCell, From, Val1, And, Val2
+        if (parts.length !== 8) { 
             addToOutput(`Error on line ${lineNumber}: 'Calculate' command syntax error. Expected 'Calculate [operation] To [result_cell] From [val1] And [val2]'.`);
             setTimeout(processNextLine, 10);
             return;
@@ -146,7 +136,7 @@ function processNextLine() {
         const val2 = getValue(parts[7]);
 
         if (typeof val1 !== 'number' || typeof val2 !== 'number') {
-            addToOutput(`Error on line <span class="math-inline">\{lineNumber\}\: '</span>{operation}' operation needs valid numbers. Got '<span class="math-inline">\{val1\}' and '</span>{val2}'.`);
+            addToOutput(`Error on line ${lineNumber}: '${operation}' operation needs valid numbers. Got '${val1}' and '${val2}'.`);
             setTimeout(processNextLine, 10);
             return;
         }
@@ -165,7 +155,7 @@ function processNextLine() {
                 result = val1 / val2;
                 break;
             default:
-                addToOutput(`Error on line <span class="math-inline">\{lineNumber\}\: Unknown operation type '</span>{operation}'.`);
+                addToOutput(`Error on line ${lineNumber}: Unknown operation type '${operation}'.`);
                 setTimeout(processNextLine, 10);
                 return;
         }
@@ -174,7 +164,7 @@ function processNextLine() {
     }
     // If condition_start
     else if (command === "If") {
-        if (parts.length < 4) { // e.g., If val1 IsEqual val2 (4 parts minimum)
+        if (parts.length < 4) {
             addToOutput(`Error on line ${lineNumber}: 'If' command syntax error.`);
             setTimeout(processNextLine, 10);
             return;
@@ -185,7 +175,7 @@ function processNextLine() {
 
         let conditionMet = false;
         if (condition === "IsEqual") {
-            conditionMet = (val1 == val2); // Use == for loose comparison (number/string)
+            conditionMet = (val1 == val2);
         } else if (condition === "IsGreater") {
             if (typeof val1 !== 'number' || typeof val2 !== 'number') {
                  addToOutput(`Error on line ${lineNumber}: 'IsGreater' needs numbers for comparison.`);
@@ -199,3 +189,107 @@ function processNextLine() {
             }
             conditionMet = (val1 < val2);
         } else {
+            addToOutput(`Error on line ${lineNumber}: Unknown condition '${condition}'.`);
+            setTimeout(processNextLine, 10);
+            return;
+        }
+
+        if (!conditionMet) {
+            let ifCounter = 1;
+            let foundElse = false;
+            let skipToEndIf = false;
+            for (let i = currentLineIndex; i < codeLines.length; i++) {
+                const subCommand = codeLines[i].trim().split(/\s+/)[0];
+                if (subCommand === "If") {
+                    ifCounter++;
+                } else if (subCommand === "EndIf") {
+                    ifCounter--;
+                } else if (subCommand === "Else" && ifCounter === 1) {
+                    foundElse = true;
+                    currentLineIndex = i + 1;
+                    break;
+                }
+                if (ifCounter === 0) {
+                    skipToEndIf = true;
+                    currentLineIndex = i + 1;
+                    break;
+                }
+            }
+            if (!foundElse && !skipToEndIf) {
+                addToOutput(`Error on line ${lineNumber}: 'If' block not properly closed with 'EndIf'.`);
+                currentLineIndex = codeLines.length;
+            }
+        }
+        setTimeout(processNextLine, 10);
+    }
+    // Else block
+    else if (command === "Else") {
+        let ifCounter = 1;
+        for (let i = currentLineIndex; i < codeLines.length; i++) {
+            const subCommand = codeLines[i].trim().split(/\s+/)[0];
+            if (subCommand === "If") {
+                ifCounter++;
+            } else if (subCommand === "EndIf") {
+                ifCounter--;
+            }
+            if (ifCounter === 0) {
+                currentLineIndex = i + 1;
+                break;
+            }
+        }
+        if (ifCounter > 0) {
+             addToOutput(`Error on line ${lineNumber}: 'Else' block not properly closed with 'EndIf'.`);
+             currentLineIndex = codeLines.length;
+        }
+        setTimeout(processNextLine, 10);
+    }
+    // EndIf block
+    else if (command === "EndIf") {
+        setTimeout(processNextLine, 10);
+    }
+    // GoTo line_number
+    else if (command === "GoTo") {
+        if (parts.length !== 2) {
+            addToOutput(`Error on line ${lineNumber}: 'GoTo' command needs a line number. Expected 'GoTo [line_number]'.`);
+            setTimeout(processNextLine, 10);
+            return;
+        }
+        const targetLine = parseInt(parts[1]);
+        if (isNaN(targetLine) || targetLine < 1 || targetLine > codeLines.length) {
+            addToOutput(`Error on line ${lineNumber}: 'GoTo' target line '${parts[1]}' is invalid.`);
+            currentLineIndex = codeLines.length; // Stop execution
+            setTimeout(processNextLine, 10);
+            return;
+        }
+        currentLineIndex = targetLine - 1; // Adjust for 0-based array index
+        setTimeout(processNextLine, 10);
+    }
+    else {
+        addToOutput(`Error on line ${lineNumber}: Unknown command '${command}'.`);
+        setTimeout(processNextLine, 10);
+    }
+    updateConsoleDisplay();
+}
+
+// Function called when the user clicks the "Send Input" button
+function sendInput() {
+    if (!isWaitingForInput || !targetCellForInput) {
+        addToOutput("[System]: Not currently waiting for input.");
+        updateConsoleDisplay();
+        return;
+    }
+
+    const inputField = document.getElementById('user-input-field');
+    const userInput = inputField.value;
+    inputField.value = ''; // Clear the input field
+
+    addToOutput(`[You typed]: ${userInput}`);
+    
+    const parsedInput = isNaN(parseFloat(userInput)) ? userInput : parseFloat(userInput);
+    memoryCells[targetCellForInput] = parsedInput;
+
+    isWaitingForInput = false;
+    targetCellForInput = null;
+    updateConsoleDisplay();
+    setTimeout(processNextLine, 10);
+}
