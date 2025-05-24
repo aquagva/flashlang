@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flash Language Interpreter</title>
+    <title>Flash Interpreter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
+            margin: 10px; /* Reduced margin */
+            background-color: #f0f2f5; /* Lighter background */
             color: #333;
-            line-height: 1.6;
         }
         h1 {
             color: #0056b3;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px; /* Reduced margin */
         }
         #main-container {
             display: flex;
             flex-wrap: wrap; 
-            gap: 25px;
-            margin-top: 20px;
+            gap: 15px; /* Reduced gap */
             justify-content: center; 
         }
         .panel {
             flex: 1; 
-            min-width: 320px; 
-            max-width: 500px; 
+            min-width: 300px; /* Slightly smaller min-width */
+            max-width: 480px; /* Adjusted max-width */
             background-color: #fff;
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            padding: 20px; /* Reduced padding */
+            border-radius: 8px; /* Slightly less rounded */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1); /* Lighter shadow */
             display: flex; 
             flex-direction: column; 
         }
@@ -40,65 +38,66 @@
             margin-top: 0;
             margin-bottom: 15px;
             text-align: center;
+            font-size: 1.2em; /* Smaller heading */
         }
         textarea {
             width: 100%;
-            height: 300px; 
-            padding: 12px; 
-            border: 1px solid #c0c0c0; 
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-size: 15px; 
-            background-color: #fcfcfc; 
+            height: 250px; /* Reduced height */
+            padding: 10px; /* Reduced padding */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px; /* Slightly smaller font */
+            background-color: #fdfdfd;
             resize: vertical; 
             box-sizing: border-box; 
-            margin-bottom: 10px; 
+            margin-bottom: 10px;
         }
         #console-output {
             flex-grow: 1; 
             width: 100%;
-            height: 300px; 
-            padding: 12px;
-            border: 1px solid #555; 
-            border-radius: 6px;
-            background-color: #222; 
-            color: #0f0; 
+            height: 250px; /* Reduced height */
+            padding: 10px;
+            border: 1px solid #444; /* Darker border */
+            border-radius: 5px;
+            background-color: #1a1a1a; /* Darker background */
+            color: #0f0; /* Classic green text */
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 15px;
+            font-size: 14px;
             overflow-y: auto; 
             white-space: pre-wrap; 
             box-sizing: border-box;
         }
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px; /* Reduced gap */
+            margin-top: 10px;
         }
         button {
             flex-grow: 1; 
-            padding: 12px 20px;
+            padding: 10px 15px; /* Reduced padding */
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px; /* Slightly smaller font */
             transition: background-color 0.3s ease, transform 0.1s ease;
         }
         button:hover {
             background-color: #0056b3;
-            transform: translateY(-1px); 
+            transform: translateY(-1px);
         }
         button:active {
-            transform: translateY(0); 
+            transform: translateY(0);
         }
         #user-input-field {
-            width: calc(100% - 24px); 
-            padding: 10px;
+            width: calc(100% - 20px); /* Full width minus padding */
+            padding: 8px; /* Reduced padding */
             margin-top: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #bbb;
             border-radius: 4px;
-            font-size: 15px;
+            font-size: 14px;
             box-sizing: border-box;
         }
 
@@ -108,8 +107,8 @@
                 align-items: center;
             }
             .panel {
-                width: 90%;
-                min-width: unset; 
+                width: 95%; /* Wider on small screens */
+                min-width: unset;
             }
         }
     </style>
@@ -119,26 +118,26 @@
 
     <div id="main-container">
         <div class="panel">
-            <h2>Your Flash Code:</h2>
+            <h2>Your Flash Code</h2>
             <textarea id="code-editor" placeholder="Write your Flash code here...
 
 Example:
 Show Hello World
 Get Input For userName With Prompt What is your name?
-Show Hello
+Show Hello,
 Show userName"></textarea>
             <div class="button-group">
                 <button onclick="runCode()">Run Code</button>
                 <button onclick="clearConsole()" style="background-color: #dc3545;">Clear Console</button>
             </div>
             
-            <h3 style="margin-top: 20px; text-align: center;">User Input for `Get Input For` command:</h3>
+            <h3 style="margin-top: 15px; text-align: center; font-size: 1.1em;">Input for `Get Input For`</h3>
             <input type="text" id="user-input-field" placeholder="Type your input here...">
             <button onclick="sendInput()" style="background-color: #28a745;">Send Input</button>
         </div>
 
         <div class="panel">
-            <h2>Console Output:</h2>
+            <h2>Console Output</h2>
             <pre id="console-output"></pre>
         </div>
     </div>
