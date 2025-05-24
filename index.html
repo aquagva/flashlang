@@ -26,6 +26,24 @@
         .input-area button { background-color: #28a745; width: 100%; }
         .input-area button:hover { background-color: #218838; }
 
+        /* Styles for copy/paste buttons specific groups */
+        .panel-header-buttons {
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 5px; /* Space between buttons */
+            margin-bottom: 10px; /* Space below buttons */
+        }
+        .panel-header-buttons button {
+            flex-grow: 0; /* Don't grow */
+            width: auto; /* Auto width */
+            padding: 5px 10px; /* Smaller padding */
+            font-size: 0.85em; /* Smaller font */
+            background-color: #6c757d; /* Grey color */
+        }
+        .panel-header-buttons button:hover {
+            background-color: #5a6268;
+        }
+
         @media (max-width: 768px) {
             .container { flex-direction: column; align-items: center; }
             .panel { max-width: 95%; }
@@ -40,6 +58,10 @@
 
     <div class="container">
         <div class="panel">
+            <div class="panel-header-buttons">
+                <button onclick="pasteCode()">Paste Code</button>
+                <button onclick="copyCode()">Copy Code</button>
+            </div>
             <h2>Your Flash Code</h2>
             <textarea id="code-editor" placeholder="Write your Flash code here...
 
@@ -55,6 +77,9 @@ show userName"></textarea>
         </div>
 
         <div class="panel">
+            <div class="panel-header-buttons">
+                <button onclick="copyConsole()">Copy Console</button>
+            </div>
             <h2>Console Output</h2>
             <pre id="console-output"></pre>
             <div class="input-area">
