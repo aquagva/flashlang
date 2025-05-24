@@ -1,106 +1,144 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flash Language Interpreter</title>
     <style>
-        /* CSS-стили для оформления страницы */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f4f4f4;
             color: #333;
+            line-height: 1.6;
         }
         h1 {
             color: #0056b3;
             text-align: center;
+            margin-bottom: 30px;
         }
         #main-container {
             display: flex;
             flex-wrap: wrap; 
-            gap: 20px;
+            gap: 25px;
             margin-top: 20px;
             justify-content: center; 
         }
-        .code-section {
+        .panel {
             flex: 1; 
-            min-width: 300px; 
+            min-width: 320px; 
+            max-width: 500px; 
             background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 25px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            display: flex; 
+            flex-direction: column; 
+        }
+        h2 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
         }
         textarea {
             width: 100%;
-            height: 250px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-            background-color: #f9f9f9;
+            height: 300px; 
+            padding: 12px; 
+            border: 1px solid #c0c0c0; 
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace; 
+            font-size: 15px; 
+            background-color: #fcfcfc; 
             resize: vertical; 
             box-sizing: border-box; 
+            margin-bottom: 10px; 
         }
         #console-output {
+            flex-grow: 1; 
             width: 100%;
-            height: 250px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #333; 
+            height: 300px; 
+            padding: 12px;
+            border: 1px solid #555; 
+            border-radius: 6px;
+            background-color: #222; 
             color: #0f0; 
-            font-family: monospace;
-            font-size: 14px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 15px;
             overflow-y: auto; 
             white-space: pre-wrap; 
             box-sizing: border-box;
         }
-        button {
-            display: block; 
-            width: 100%;
-            padding: 12px 20px;
+        .button-group {
+            display: flex;
+            gap: 10px;
             margin-top: 15px;
+        }
+        button {
+            flex-grow: 1; 
+            padding: 12px 20px;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.1s ease;
         }
         button:hover {
             background-color: #0056b3;
+            transform: translateY(-1px); 
         }
+        button:active {
+            transform: translateY(0); 
+        }
+        #user-input-field {
+            width: calc(100% - 24px); 
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
         @media (max-width: 768px) {
             #main-container {
                 flex-direction: column; 
                 align-items: center;
             }
-            .code-section {
+            .panel {
                 width: 90%;
+                min-width: unset; 
             }
         }
     </style>
 </head>
 <body>
-    <h1>Интерпретатор языка Flash</h1>
+    <h1>Flash Language Interpreter</h1>
 
     <div id="main-container">
-        <div class="code-section">
-            <h2>Ваш Flash-код:</h2>
-            <textarea id="code-editor" placeholder="Напишите ваш Flash-код здесь...
+        <div class="panel">
+            <h2>Your Flash Code:</h2>
+            <textarea id="code-editor" placeholder="Write your Flash code here...
 
-Примеры:
+Example:
 Show Hello World
-Add 10 5
-Multiply 6 4"></textarea>
-            <button onclick="runCode()">Запустить код Flash</button>
+Get Input For userName With Prompt What is your name?
+Show Hello
+Show userName"></textarea>
+            <div class="button-group">
+                <button onclick="runCode()">Run Code</button>
+                <button onclick="clearConsole()" style="background-color: #dc3545;">Clear Console</button>
+            </div>
+            
+            <h3 style="margin-top: 20px; text-align: center;">User Input for `Get Input For` command:</h3>
+            <input type="text" id="user-input-field" placeholder="Type your input here...">
+            <button onclick="sendInput()" style="background-color: #28a745;">Send Input</button>
         </div>
 
-        <div class="code-section">
-            <h2>Вывод консоли:</h2>
+        <div class="panel">
+            <h2>Console Output:</h2>
             <pre id="console-output"></pre>
         </div>
     </div>
